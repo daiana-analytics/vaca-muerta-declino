@@ -31,7 +31,8 @@ vaca-muerta-declino/
 │   ├── clasificacion_pozos_modernos.csv (pozos activos vs. parados)
 │   ├── ajuste_arps_pozo155785.png       (ajuste de Arps sin restricciones)
 │   ├── ajuste_arps_pozo155785_acotado.png (ajuste de Arps acotado, b ≤ 2)
-│   └── comparacion_proyecciones_pozo155785.png (proyección libre vs. acotada, 15 años)
+│   ├── comparacion_proyecciones_pozo155785.png (proyección libre vs. acotada, 15 años)
+│   └── backtesting_arps_pozo155785.png  (validación entrenamiento/prueba)
 ├── notebooks/
 └── scripts/
     ├── fase3_paso1_explorar.py
@@ -49,7 +50,8 @@ vaca-muerta-declino/
     ├── fase7_paso4_clasificar_pozos.py
     ├── fase8_paso1_ajustar_arps_un_pozo.py
     ├── fase8_paso2_ajustar_arps_acotado.py
-    └── fase8_paso3_comparar_proyecciones.py
+    ├── fase8_paso3_comparar_proyecciones.py
+    └── fase9_paso1_backtesting_arps.py
 ```
 
 ---
@@ -76,6 +78,7 @@ El análisis está dividido en fases, cada una como un script independiente y ej
 | **8 — Ajuste de modelo de declino (Arps)** | `fase8_paso1_ajustar_arps_un_pozo.py` | Ajusta el modelo hiperbólico de Arps (`qi`, `Di`, `b`) a la producción post-pico del pozo, sin restricciones sobre los parámetros. |
 | | `fase8_paso2_ajustar_arps_acotado.py` | Repite el ajuste limitando el exponente `b` a un rango físicamente razonable (0–2), para evitar el *"b-factor problem"* típico de los ajustes libres en pozos no convencionales. |
 | | `fase8_paso3_comparar_proyecciones.py` | Proyecta ambos ajustes (libre y acotado) 15 años hacia adelante y cuantifica la diferencia en reservas estimadas (producción acumulada). |
+| **9 — Validación del modelo (backtesting)** | `fase9_paso1_backtesting_arps.py` | Ajusta el modelo de Arps usando solo el primer 70% de la historia del pozo (entrenamiento) y evalúa su error al proyectar el 30% restante (prueba), nunca visto por el ajuste. |
 
 ---
 
@@ -116,6 +119,18 @@ El exponente `b` del ajuste libre casi triplica el límite superior (b=2) que la
 
 ![Comparación de proyecciones: ajuste libre vs. acotado](data/comparacion_proyecciones_pozo155785.png)
 
+### Validación del modelo mediante backtesting
+
+Para evaluar si el modelo de Arps realmente *predice* y no solo *ajusta*, se dividió la historia del pozo en entrenamiento (primeros 88 meses, 70%) y prueba (últimos 38 meses, 30%, ocultos al ajuste). El modelo se ajustó únicamente con los datos de entrenamiento y se usó para proyectar el período de prueba:
+
+- **MAE:** 7,05 m³/mes
+- **RMSE:** 9,96 m³/mes
+- **MAPE:** 36,3%
+
+El error absoluto (MAE/RMSE) es moderado en relación a los niveles de producción de la cola del pozo (10-20 m³/mes), pero el error porcentual (MAPE) es alto. Esto refleja una limitación real del modelo más que una falla del ajuste: en el tramo final de vida del pozo, la producción es baja y más sensible a intervenciones operativas (reacondicionamientos, paradas, nuevas estimulaciones) que generan picos y caídas que una curva determinística como Arps no puede anticipar — visibles en el gráfico como los saltos de producción real por encima de los 30 m³/mes entre los meses 100 y 125, que el modelo no predijo. Este resultado es coherente con la práctica de la industria: Arps es confiable para capturar la tendencia general del declino, pero pierde precisión relativa en la cola larga de bajo caudal.
+
+![Backtesting del modelo de Arps](data/backtesting_arps_pozo155785.png)
+
 ---
 
 ## Tecnologías
@@ -144,6 +159,7 @@ python fase7_paso4_clasificar_pozos.py
 python fase8_paso1_ajustar_arps_un_pozo.py
 python fase8_paso2_ajustar_arps_acotado.py
 python fase8_paso3_comparar_proyecciones.py
+python fase9_paso1_backtesting_arps.py
 ```
 
 Requiere `pandas`, `matplotlib` y `scipy`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `fase3_paso1_explorar.py`.
