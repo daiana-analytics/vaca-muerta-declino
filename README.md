@@ -26,6 +26,9 @@ vaca-muerta-declino/
 │   ├── produccion_no_convencional.csv   (no versionado — dataset crudo completo)
 │   ├── vaca_muerta_filtrado.csv         (dataset filtrado, formación Vaca Muerta)
 │   ├── curva_declino_pozo155785.png     (gráfico final, fase 6)
+│   ├── declino_pozos_modernos.csv       (declino de 1.974 pozos modernos)
+│   ├── histograma_declino_12m.png       (distribución de caída a 12 meses)
+│   ├── clasificacion_pozos_modernos.csv (pozos activos vs. parados)
 │   ├── ajuste_arps_pozo155785.png       (ajuste de Arps sin restricciones)
 │   ├── ajuste_arps_pozo155785_acotado.png (ajuste de Arps acotado, b ≤ 2)
 │   └── comparacion_proyecciones_pozo155785.png (proyección libre vs. acotada, 15 años)
@@ -40,6 +43,10 @@ vaca-muerta-declino/
     ├── fase4_paso4_pozos_modernos.py
     ├── fase5_paso1_calcular_declino.py
     ├── fase6_paso1_grafico_final.py
+    ├── fase7_paso1_declino_todos_pozos.py
+    ├── fase7_paso2_histograma_declino.py
+    ├── fase7_paso3_investigar_caidas_100.py
+    ├── fase7_paso4_clasificar_pozos.py
     ├── fase8_paso1_ajustar_arps_un_pozo.py
     ├── fase8_paso2_ajustar_arps_acotado.py
     └── fase8_paso3_comparar_proyecciones.py
@@ -62,6 +69,10 @@ El análisis está dividido en fases, cada una como un script independiente y ej
 | | `fase4_paso4_pozos_modernos.py` | Acota el universo a pozos que arrancaron en 2016 o después, con suficiente historia para analizar el declino. |
 | **5 — Cálculo del declino** | `fase5_paso1_calcular_declino.py` | Calcula el pico de producción, la producción 12 meses después del pico, y la caída porcentual — a los 12 meses y hasta el dato más reciente. |
 | **6 — Visualización final** | `fase6_paso1_grafico_final.py` | Arma el gráfico final con el pico y la caída a 12 meses marcados y anotados, listo para presentar. |
+| **7 — Declino a escala (todos los pozos modernos)** | `fase7_paso1_declino_todos_pozos.py` | Replica el cálculo de declino del pozo de caso sobre los 1.974 pozos modernos con suficiente historia, guardando pico, caída a 12 meses y caída total de cada uno. |
+| | `fase7_paso2_histograma_declino.py` | Grafica la distribución de la caída a los 12 meses en un histograma, con la media marcada. |
+| | `fase7_paso3_investigar_caidas_100.py` | Investiga los pozos con caída ≥99% a los 12 meses, cruzando con la columna `tef` (tiempo efectivo de producción) para distinguir agotamiento real de paradas operativas. |
+| | `fase7_paso4_clasificar_pozos.py` | Clasifica 2.348 pozos modernos como activos o parados según su último registro de `tef`, y calcula el porcentaje parado. |
 | **8 — Ajuste de modelo de declino (Arps)** | `fase8_paso1_ajustar_arps_un_pozo.py` | Ajusta el modelo hiperbólico de Arps (`qi`, `Di`, `b`) a la producción post-pico del pozo, sin restricciones sobre los parámetros. |
 | | `fase8_paso2_ajustar_arps_acotado.py` | Repite el ajuste limitando el exponente `b` a un rango físicamente razonable (0–2), para evitar el *"b-factor problem"* típico de los ajustes libres en pozos no convencionales. |
 | | `fase8_paso3_comparar_proyecciones.py` | Proyecta ambos ajustes (libre y acotado) 15 años hacia adelante y cuantifica la diferencia en reservas estimadas (producción acumulada). |
@@ -80,6 +91,18 @@ Este patrón — una caída muy pronunciada en el primer año, seguida de una co
 
 ![Curva de declino del pozo 155785](data/curva_declino_pozo155785.png)
 
+### Declino a nivel de todos los pozos modernos
+
+Para contextualizar el caso del pozo 155785, se replicó el cálculo de declino sobre los **1.974 pozos modernos** (iniciados en 2016 o después) con al menos 12 meses de historia posteriores al pico:
+
+- **Caída promedio a los 12 meses:** -69,8% (mediana: -69,5%)
+- **Caída total promedio** (hasta el dato más reciente): -85,5%
+- **152 pozos (7,7%)** mostraron una caída de 99% o más a los 12 meses. Se investigó una muestra de estos casos cruzando con la columna `tef` (tiempo efectivo de producción) para distinguir entre pozos realmente agotados y pozos simplemente parados por motivos operativos.
+
+Sobre un universo más amplio de **2.348 pozos modernos**, se clasificó cada uno según si seguía activo (`tef > 0`) en su último registro: **el 12,1% estaba parado** al final de su historia disponible — una distinción importante para no confundir "declino natural del yacimiento" con "pozo fuera de servicio" al interpretar las estadísticas agregadas.
+
+![Distribución de la caída a los 12 meses](data/histograma_declino_12m.png)
+
 ### Ajuste del modelo de Arps y el "b-factor problem"
 
 Sobre el mismo pozo 155785 se ajustó el modelo hiperbólico de Arps a la producción post-pico, comparando un ajuste sin restricciones contra uno acotado a los rangos físicamente razonables que usa la industria:
@@ -97,7 +120,7 @@ El exponente `b` del ajuste libre casi triplica el límite superior (b=2) que la
 
 ## Tecnologías
 
-![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![Pandas](https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white) ![Matplotlib](https://img.shields.io/badge/Matplotlib-11557c?logo=plotly&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![Pandas](https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white) ![Matplotlib](https://img.shields.io/badge/Matplotlib-11557c?logo=plotly&logoColor=white) ![SciPy](https://img.shields.io/badge/SciPy-8CAAE6?logo=scipy&logoColor=white)
 
 ---
 
@@ -114,6 +137,10 @@ python fase4_paso3_graficar.py
 python fase4_paso4_pozos_modernos.py
 python fase5_paso1_calcular_declino.py
 python fase6_paso1_grafico_final.py
+python fase7_paso1_declino_todos_pozos.py
+python fase7_paso2_histograma_declino.py
+python fase7_paso3_investigar_caidas_100.py
+python fase7_paso4_clasificar_pozos.py
 python fase8_paso1_ajustar_arps_un_pozo.py
 python fase8_paso2_ajustar_arps_acotado.py
 python fase8_paso3_comparar_proyecciones.py
