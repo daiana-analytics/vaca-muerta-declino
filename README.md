@@ -25,7 +25,10 @@ vaca-muerta-declino/
 ├── data/
 │   ├── produccion_no_convencional.csv   (no versionado — dataset crudo completo)
 │   ├── vaca_muerta_filtrado.csv         (dataset filtrado, formación Vaca Muerta)
-│   └── curva_declino_pozo155785.png     (gráfico final)
+│   ├── curva_declino_pozo155785.png     (gráfico final, fase 6)
+│   ├── ajuste_arps_pozo155785.png       (ajuste de Arps sin restricciones)
+│   ├── ajuste_arps_pozo155785_acotado.png (ajuste de Arps acotado, b ≤ 2)
+│   └── comparacion_proyecciones_pozo155785.png (proyección libre vs. acotada, 15 años)
 ├── notebooks/
 └── scripts/
     ├── fase3_paso1_explorar.py
@@ -36,7 +39,10 @@ vaca-muerta-declino/
     ├── fase4_paso3_graficar.py
     ├── fase4_paso4_pozos_modernos.py
     ├── fase5_paso1_calcular_declino.py
-    └── fase6_paso1_grafico_final.py
+    ├── fase6_paso1_grafico_final.py
+    ├── fase8_paso1_ajustar_arps_un_pozo.py
+    ├── fase8_paso2_ajustar_arps_acotado.py
+    └── fase8_paso3_comparar_proyecciones.py
 ```
 
 ---
@@ -56,6 +62,9 @@ El análisis está dividido en fases, cada una como un script independiente y ej
 | | `fase4_paso4_pozos_modernos.py` | Acota el universo a pozos que arrancaron en 2016 o después, con suficiente historia para analizar el declino. |
 | **5 — Cálculo del declino** | `fase5_paso1_calcular_declino.py` | Calcula el pico de producción, la producción 12 meses después del pico, y la caída porcentual — a los 12 meses y hasta el dato más reciente. |
 | **6 — Visualización final** | `fase6_paso1_grafico_final.py` | Arma el gráfico final con el pico y la caída a 12 meses marcados y anotados, listo para presentar. |
+| **8 — Ajuste de modelo de declino (Arps)** | `fase8_paso1_ajustar_arps_un_pozo.py` | Ajusta el modelo hiperbólico de Arps (`qi`, `Di`, `b`) a la producción post-pico del pozo, sin restricciones sobre los parámetros. |
+| | `fase8_paso2_ajustar_arps_acotado.py` | Repite el ajuste limitando el exponente `b` a un rango físicamente razonable (0–2), para evitar el *"b-factor problem"* típico de los ajustes libres en pozos no convencionales. |
+| | `fase8_paso3_comparar_proyecciones.py` | Proyecta ambos ajustes (libre y acotado) 15 años hacia adelante y cuantifica la diferencia en reservas estimadas (producción acumulada). |
 
 ---
 
@@ -70,6 +79,19 @@ Caso de estudio: **pozo 155785**, formación Vaca Muerta.
 Este patrón — una caída muy pronunciada en el primer año, seguida de una cola larga de producción baja pero sostenida — es la firma característica de un pozo no convencional (*shale*), y es la base de cualquier estimación de reservas o planificación de nuevas perforaciones en Vaca Muerta.
 
 ![Curva de declino del pozo 155785](data/curva_declino_pozo155785.png)
+
+### Ajuste del modelo de Arps y el "b-factor problem"
+
+Sobre el mismo pozo 155785 se ajustó el modelo hiperbólico de Arps a la producción post-pico, comparando un ajuste sin restricciones contra uno acotado a los rangos físicamente razonables que usa la industria:
+
+| | qi (m³/mes) | Di (1/mes) | b |
+|---|---|---|---|
+| Ajuste libre | 193,3 | 6,812 | **2,903** |
+| Ajuste acotado (b ≤ 2) | 188,9 | 1,600 | **2,000** |
+
+El exponente `b` del ajuste libre casi triplica el límite superior (b=2) que la industria considera físicamente razonable para pozos no convencionales — un problema conocido como *b-factor problem* en el análisis de curvas de declino. Proyectando ambos ajustes 15 años hacia adelante, el modelo sin restricciones **sobreestima la producción acumulada en un 16%** respecto al modelo acotado, una diferencia con impacto directo en la estimación de reservas (EUR) y en decisiones de inversión sobre el pozo.
+
+![Comparación de proyecciones: ajuste libre vs. acotado](data/comparacion_proyecciones_pozo155785.png)
 
 ---
 
@@ -92,9 +114,12 @@ python fase4_paso3_graficar.py
 python fase4_paso4_pozos_modernos.py
 python fase5_paso1_calcular_declino.py
 python fase6_paso1_grafico_final.py
+python fase8_paso1_ajustar_arps_un_pozo.py
+python fase8_paso2_ajustar_arps_acotado.py
+python fase8_paso3_comparar_proyecciones.py
 ```
 
-Requiere `pandas` y `matplotlib`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `fase3_paso1_explorar.py`.
+Requiere `pandas`, `matplotlib` y `scipy`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `fase3_paso1_explorar.py`.
 
 ---
 
