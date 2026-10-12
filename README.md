@@ -1,10 +1,33 @@
 # Curva de declino — Pozos no convencionales de Vaca Muerta
 
-## Objetivo
+[![Dashboard interactivo de Vaca Muerta](https://daiana-analytics.github.io/assets/projects/vaca-muerta.png)](https://daiana-analytics.github.io/#dashboard)
 
-Proyecto de análisis exploratorio orientado a portfolio que reconstruye, paso a paso y en **Python**, el flujo típico de un análisis de producción de hidrocarburos no convencionales: desde el dato crudo público hasta el cálculo de la **curva de declino** de un pozo de la formación Vaca Muerta.
+**[Explorar el dashboard interactivo](https://daiana-analytics.github.io/#dashboard)** · Datos públicos de la Secretaría de Energía de la Nación · Python, pandas, SciPy, Power BI
 
-El foco está puesto en una pregunta concreta del negocio de Oil & Gas: *una vez que un pozo no convencional alcanza su pico de producción, ¿qué tan rápido cae, y cuánto le queda productivo un año después?*
+---
+
+## Objetivo general
+
+Entender qué tan rápido pierde producción un pozo no convencional de Vaca Muerta y qué tan confiable es proyectar su producción futura, trabajando con datos públicos reales: desde el archivo crudo hasta una conclusión que sirva para tomar decisiones.
+
+## Preguntas de negocio
+
+1. **¿Qué tan rápido cae un pozo después de su pico?** Se mide en un pozo de caso (155785) y la caída a los 12 meses.
+2. **¿Es así en todos los pozos o fue un caso aislado?** Se repite el cálculo en los 1.974 pozos modernos (iniciados desde 2016) con historia suficiente.
+3. **¿Todas las caídas son reales?** Se separan los pozos parados de los agotados, para no exagerar el declino.
+4. **¿Cuánto va a producir un pozo en el futuro?** Se ajusta el modelo de Arps, estándar de la industria, con y sin restricciones.
+5. **¿Qué tan confiable es esa proyección?** Se valida el modelo con backtesting: se le esconde el último tramo de la historia y se mide cuánto se equivoca.
+
+## Resultados clave
+
+| Indicador | Resultado |
+|---|---|
+| Caída promedio a los 12 meses del pico | **69,8%** (1.974 pozos modernos) |
+| Caída promedio total, hasta el último dato | **85,5%** |
+| Pozos parados al cierre del período | **12,1%** de 2.348 pozos modernos |
+| Sobreestimación del modelo de Arps sin acotar, a 15 años | **16%** |
+
+**Qué significa para el negocio:** si un pozo pierde cerca del 70% en su primer año, sostener la producción exige perforar en forma continua. Eso explica la demanda constante de servicios (perforación, fractura, logística, mantenimiento) en la cuenca, y por qué una proyección de reservas sin control puede llevar a malas decisiones de inversión.
 
 ---
 
