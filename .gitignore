@@ -1,1 +1,5 @@
 data/produccion_no_convencional.csv
+# Base de datos local de DuckDB (se regenera desde el CSV)
+*.duckdb
+*.duckdb.wal
+nul
