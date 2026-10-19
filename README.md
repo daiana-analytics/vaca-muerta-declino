@@ -2,7 +2,7 @@
 
 [![Dashboard interactivo de Vaca Muerta](https://daiana-analytics.github.io/assets/projects/vaca-muerta.png)](https://daiana-analytics.github.io/#dashboard)
 
-**[Explorar el dashboard interactivo](https://daiana-analytics.github.io/#dashboard)** · Datos públicos de la Secretaría de Energía de la Nación · Python, pandas, SciPy, Power BI
+**[Explorar el dashboard interactivo](https://daiana-analytics.github.io/#dashboard)** · Datos públicos de la Secretaría de Energía de la Nación · SQL (DuckDB), Python, pandas, SciPy, Power BI
 
 ---
 
@@ -20,12 +20,12 @@ Entender qué tan rápido pierde producción un pozo no convencional de Vaca Mue
 
 ## Resultados clave
 
-| Indicador | Resultado |
-|---|---|
-| Caída promedio a los 12 meses del pico | **69,8%** (1.974 pozos modernos) |
-| Caída promedio total, hasta el último dato | **85,5%** |
-| Pozos parados al cierre del período | **12,1%** de 2.348 pozos modernos |
-| Sobreestimación del modelo de Arps sin acotar, a 15 años | **16%** |
+| Indicador                                                | Resultado                         |
+| -------------------------------------------------------- | --------------------------------- |
+| Caída promedio a los 12 meses del pico                   | **69,8%** (1.974 pozos modernos)  |
+| Caída promedio total, hasta el último dato               | **85,5%**                         |
+| Pozos parados al cierre del período                      | **12,1%** de 2.348 pozos modernos |
+| Sobreestimación del modelo de Arps sin acotar, a 15 años | **16%**                           |
 
 **Qué significa para el negocio:** si un pozo pierde cerca del 70% en su primer año, sostener la producción exige perforar en forma continua. Eso explica la demanda constante de servicios (perforación, fractura, logística, mantenimiento) en la cuenca, y por qué una proyección de reservas sin control puede llevar a malas decisiones de inversión.
 
@@ -57,6 +57,14 @@ vaca-muerta-declino/
 │   ├── comparacion_proyecciones_pozo155785.png (proyección libre vs. acotada, 15 años)
 │   └── backtesting_arps_pozo155785.png  (validación entrenamiento/prueba)
 ├── notebooks/
+├── sql/
+│   ├── 01_carga.sql
+│   ├── 02_exploracion.sql
+│   ├── 03_vaca_muerta.sql
+│   ├── 04_auditoria.sql
+│   ├── 05_pico_declino.sql
+│   ├── 06_validacion_python.sql
+│   └── 07_declino_calendario.sql
 └── scripts/
     ├── fase3_paso1_explorar.py
     ├── fase3_paso2_formacion.py
@@ -83,25 +91,49 @@ vaca-muerta-declino/
 
 El análisis está dividido en fases, cada una como un script independiente y ejecutable:
 
-| Fase | Script | Qué hace |
-|---|---|---|
-| **3 — Exploración y limpieza** | `fase3_paso1_explorar.py` | Abre el CSV crudo y revisa su forma: filas, columnas, primeras observaciones. |
-| | `fase3_paso2_formacion.py` | Cuenta cuántos registros hay por formación geológica. |
-| | `fase3_paso3_filtrar.py` | Filtra solo la formación **Vaca Muerta**, se queda con las columnas útiles (`idpozo`, `empresa`, `areayacimiento`, `anio`, `mes`, `prod_pet`, `prod_gas`, `prod_agua`, `tef`, `fecha_data`), audita nulos y guarda el dataset reducido. |
-| **4 — Selección del pozo de caso** | `fase4_paso1_elegir_pozo.py` | Identifica los pozos con más meses de historia productiva. |
-| | `fase4_paso2_revisar_pozo.py` | Audita la calidad de los datos de un pozo puntual (meses duplicados, continuidad de la serie). |
-| | `fase4_paso3_graficar.py` | Primer gráfico exploratorio de la producción mensual del pozo elegido. |
-| | `fase4_paso4_pozos_modernos.py` | Acota el universo a pozos que arrancaron en 2016 o después, con suficiente historia para analizar el declino. |
-| **5 — Cálculo del declino** | `fase5_paso1_calcular_declino.py` | Calcula el pico de producción, la producción 12 meses después del pico, y la caída porcentual — a los 12 meses y hasta el dato más reciente. |
-| **6 — Visualización final** | `fase6_paso1_grafico_final.py` | Arma el gráfico final con el pico y la caída a 12 meses marcados y anotados, listo para presentar. |
-| **7 — Declino a escala (todos los pozos modernos)** | `fase7_paso1_declino_todos_pozos.py` | Replica el cálculo de declino del pozo de caso sobre los 1.974 pozos modernos con suficiente historia, guardando pico, caída a 12 meses y caída total de cada uno. |
-| | `fase7_paso2_histograma_declino.py` | Grafica la distribución de la caída a los 12 meses en un histograma, con la media marcada. |
-| | `fase7_paso3_investigar_caidas_100.py` | Investiga los pozos con caída ≥99% a los 12 meses, cruzando con la columna `tef` (tiempo efectivo de producción) para distinguir agotamiento real de paradas operativas. |
-| | `fase7_paso4_clasificar_pozos.py` | Clasifica 2.348 pozos modernos como activos o parados según su último registro de `tef`, y calcula el porcentaje parado. |
-| **8 — Ajuste de modelo de declino (Arps)** | `fase8_paso1_ajustar_arps_un_pozo.py` | Ajusta el modelo hiperbólico de Arps (`qi`, `Di`, `b`) a la producción post-pico del pozo, sin restricciones sobre los parámetros. |
-| | `fase8_paso2_ajustar_arps_acotado.py` | Repite el ajuste limitando el exponente `b` a un rango físicamente razonable (0–2), para evitar el *"b-factor problem"* típico de los ajustes libres en pozos no convencionales. |
-| | `fase8_paso3_comparar_proyecciones.py` | Proyecta ambos ajustes (libre y acotado) 15 años hacia adelante y cuantifica la diferencia en reservas estimadas (producción acumulada). |
-| **9 — Validación del modelo (backtesting)** | `fase9_paso1_backtesting_arps.py` | Ajusta el modelo de Arps usando solo el primer 70% de la historia del pozo (entrenamiento) y evalúa su error al proyectar el 30% restante (prueba), nunca visto por el ajuste. |
+| Fase                                                | Script                                 | Qué hace                                                                                                                                                                                                                                |
+| --------------------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **3 — Exploración y limpieza**                      | `fase3_paso1_explorar.py`              | Abre el CSV crudo y revisa su forma: filas, columnas, primeras observaciones.                                                                                                                                                           |
+|                                                     | `fase3_paso2_formacion.py`             | Cuenta cuántos registros hay por formación geológica.                                                                                                                                                                                   |
+|                                                     | `fase3_paso3_filtrar.py`               | Filtra solo la formación **Vaca Muerta**, se queda con las columnas útiles (`idpozo`, `empresa`, `areayacimiento`, `anio`, `mes`, `prod_pet`, `prod_gas`, `prod_agua`, `tef`, `fecha_data`), audita nulos y guarda el dataset reducido. |
+| **4 — Selección del pozo de caso**                  | `fase4_paso1_elegir_pozo.py`           | Identifica los pozos con más meses de historia productiva.                                                                                                                                                                              |
+|                                                     | `fase4_paso2_revisar_pozo.py`          | Audita la calidad de los datos de un pozo puntual (meses duplicados, continuidad de la serie).                                                                                                                                          |
+|                                                     | `fase4_paso3_graficar.py`              | Primer gráfico exploratorio de la producción mensual del pozo elegido.                                                                                                                                                                  |
+|                                                     | `fase4_paso4_pozos_modernos.py`        | Acota el universo a pozos que arrancaron en 2016 o después, con suficiente historia para analizar el declino.                                                                                                                           |
+| **5 — Cálculo del declino**                         | `fase5_paso1_calcular_declino.py`      | Calcula el pico de producción, la producción 12 meses después del pico, y la caída porcentual — a los 12 meses y hasta el dato más reciente.                                                                                            |
+| **6 — Visualización final**                         | `fase6_paso1_grafico_final.py`         | Arma el gráfico final con el pico y la caída a 12 meses marcados y anotados, listo para presentar.                                                                                                                                      |
+| **7 — Declino a escala (todos los pozos modernos)** | `fase7_paso1_declino_todos_pozos.py`   | Replica el cálculo de declino del pozo de caso sobre los 1.974 pozos modernos con suficiente historia, guardando pico, caída a 12 meses y caída total de cada uno.                                                                      |
+|                                                     | `fase7_paso2_histograma_declino.py`    | Grafica la distribución de la caída a los 12 meses en un histograma, con la media marcada.                                                                                                                                              |
+|                                                     | `fase7_paso3_investigar_caidas_100.py` | Investiga los pozos con caída ≥99% a los 12 meses, cruzando con la columna `tef` (tiempo efectivo de producción) para distinguir agotamiento real de paradas operativas.                                                                |
+|                                                     | `fase7_paso4_clasificar_pozos.py`      | Clasifica 2.348 pozos modernos como activos o parados según su último registro de `tef`, y calcula el porcentaje parado.                                                                                                                |
+| **8 — Ajuste de modelo de declino (Arps)**          | `fase8_paso1_ajustar_arps_un_pozo.py`  | Ajusta el modelo hiperbólico de Arps (`qi`, `Di`, `b`) a la producción post-pico del pozo, sin restricciones sobre los parámetros.                                                                                                      |
+|                                                     | `fase8_paso2_ajustar_arps_acotado.py`  | Repite el ajuste limitando el exponente `b` a un rango físicamente razonable (0–2), para evitar el _"b-factor problem"_ típico de los ajustes libres en pozos no convencionales.                                                        |
+|                                                     | `fase8_paso3_comparar_proyecciones.py` | Proyecta ambos ajustes (libre y acotado) 15 años hacia adelante y cuantifica la diferencia en reservas estimadas (producción acumulada).                                                                                                |
+| **9 — Validación del modelo (backtesting)**         | `fase9_paso1_backtesting_arps.py`      | Ajusta el modelo de Arps usando solo el primer 70% de la historia del pozo (entrenamiento) y evalúa su error al proyectar el 30% restante (prueba), nunca visto por el ajuste.                                                          |
+
+---
+
+## Capa SQL (DuckDB)
+
+La extracción, limpieza y auditoría de calidad también están resueltas en SQL, en la carpeta `sql/`, sobre una base local de DuckDB. El circuito es: **SQL para extraer y limpiar, Python para analizar.**
+
+| Script                      | Qué hace                                                                                                   |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `01_carga.sql`              | Carga el CSV crudo en la tabla `produccion_raw` (426.145 filas).                                           |
+| `02_exploracion.sql`        | Revisa nulos en las columnas clave: no hay.                                                                |
+| `03_vaca_muerta.sql`        | Crea la vista `vm_produccion`: formación Vaca Muerta (219.848 registros) y solo las columnas del análisis. |
+| `04_auditoria.sql`          | Controles de calidad: meses duplicados, huecos en la serie y meses con `tef = 0`.                          |
+| `05_pico_declino.sql`       | Pico de cada pozo y producción 12 meses después, con funciones de ventana (`ROW_NUMBER`) y CTE.            |
+| `06_validacion_python.sql`  | Replica la lógica de Python (12 filas después del pico, con `LEAD`) para validar la migración.             |
+| `07_declino_calendario.sql` | Recalcula el declino por meses calendario, robusto a huecos en la serie.                                   |
+
+**Hallazgos de la auditoría:**
+
+- Sin meses duplicados por pozo.
+- 409 de 3.417 pozos (12%) tienen huecos en su serie mensual.
+- 43.434 registros (≈20%) corresponden a meses con el pozo parado (`tef = 0`); 172 de ellos informan producción igual, una inconsistencia de carga.
+
+**Validación:** la versión SQL reproduce exactamente el resultado de Python (1.974 pozos, caída promedio de 69,8%). Como Python mide "12 meses después del pico" contando filas, se recalculó por meses calendario: el resultado se mantiene en 69,8% (1.970 pozos), por lo que la métrica es robusta a los huecos de la serie.
 
 ---
 
@@ -113,7 +145,7 @@ Caso de estudio: **pozo 155785**, formación Vaca Muerta.
 - **Caída a los 12 meses del pico:** -85% (29,7 m³/mes)
 - **Caída total hasta el dato más reciente:** -88% (23,5 m³/mes)
 
-Este patrón — una caída muy pronunciada en el primer año, seguida de una cola larga de producción baja pero sostenida — es la firma característica de un pozo no convencional (*shale*), y es la base de cualquier estimación de reservas o planificación de nuevas perforaciones en Vaca Muerta.
+Este patrón — una caída muy pronunciada en el primer año, seguida de una cola larga de producción baja pero sostenida — es la firma característica de un pozo no convencional (_shale_), y es la base de cualquier estimación de reservas o planificación de nuevas perforaciones en Vaca Muerta.
 
 ![Curva de declino del pozo 155785](data/curva_declino_pozo155785.png)
 
@@ -133,18 +165,18 @@ Sobre un universo más amplio de **2.348 pozos modernos**, se clasificó cada un
 
 Sobre el mismo pozo 155785 se ajustó el modelo hiperbólico de Arps a la producción post-pico, comparando un ajuste sin restricciones contra uno acotado a los rangos físicamente razonables que usa la industria:
 
-| | qi (m³/mes) | Di (1/mes) | b |
-|---|---|---|---|
-| Ajuste libre | 193,3 | 6,812 | **2,903** |
-| Ajuste acotado (b ≤ 2) | 188,9 | 1,600 | **2,000** |
+|                        | qi (m³/mes) | Di (1/mes) | b         |
+| ---------------------- | ----------- | ---------- | --------- |
+| Ajuste libre           | 193,3       | 6,812      | **2,903** |
+| Ajuste acotado (b ≤ 2) | 188,9       | 1,600      | **2,000** |
 
-El exponente `b` del ajuste libre casi triplica el límite superior (b=2) que la industria considera físicamente razonable para pozos no convencionales — un problema conocido como *b-factor problem* en el análisis de curvas de declino. Proyectando ambos ajustes 15 años hacia adelante, el modelo sin restricciones **sobreestima la producción acumulada en un 16%** respecto al modelo acotado, una diferencia con impacto directo en la estimación de reservas (EUR) y en decisiones de inversión sobre el pozo.
+El exponente `b` del ajuste libre casi triplica el límite superior (b=2) que la industria considera físicamente razonable para pozos no convencionales — un problema conocido como _b-factor problem_ en el análisis de curvas de declino. Proyectando ambos ajustes 15 años hacia adelante, el modelo sin restricciones **sobreestima la producción acumulada en un 16%** respecto al modelo acotado, una diferencia con impacto directo en la estimación de reservas (EUR) y en decisiones de inversión sobre el pozo.
 
 ![Comparación de proyecciones: ajuste libre vs. acotado](data/comparacion_proyecciones_pozo155785.png)
 
 ### Validación del modelo mediante backtesting
 
-Para evaluar si el modelo de Arps realmente *predice* y no solo *ajusta*, se dividió la historia del pozo en entrenamiento (primeros 88 meses, 70%) y prueba (últimos 38 meses, 30%, ocultos al ajuste). El modelo se ajustó únicamente con los datos de entrenamiento y se usó para proyectar el período de prueba:
+Para evaluar si el modelo de Arps realmente _predice_ y no solo _ajusta_, se dividió la historia del pozo en entrenamiento (primeros 88 meses, 70%) y prueba (últimos 38 meses, 30%, ocultos al ajuste). El modelo se ajustó únicamente con los datos de entrenamiento y se usó para proyectar el período de prueba:
 
 - **MAE:** 7,05 m³/mes
 - **RMSE:** 9,96 m³/mes
@@ -158,13 +190,35 @@ El error absoluto (MAE/RMSE) es moderado en relación a los niveles de producci�
 
 ## Tecnologías
 
-![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![Pandas](https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white) ![Matplotlib](https://img.shields.io/badge/Matplotlib-11557c?logo=plotly&logoColor=white) ![SciPy](https://img.shields.io/badge/SciPy-8CAAE6?logo=scipy&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![Pandas](https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white) ![Matplotlib](https://img.shields.io/badge/Matplotlib-11557c?logo=plotly&logoColor=white) ![SciPy](https://img.shields.io/badge/SciPy-8CAAE6?logo=scipy&logoColor=white) ![SQL](https://img.shields.io/badge/SQL-336791?logo=databricks&logoColor=white) ![DuckDB](https://img.shields.io/badge/DuckDB-FFF000?logo=duckdb&logoColor=black)
 
 ---
 
 ## Cómo ejecutar
 
+````bash
+### 1. Capa SQL
+
+Requiere [DuckDB](https://duckdb.org/) (en Windows: `winget install DuckDB.cli`). Desde la raíz del repositorio:
+
 ```bash
+duckdb vaca_muerta.duckdb
+````
+
+Y dentro de DuckDB:
+
+```
+.read sql/01_carga.sql
+.read sql/02_exploracion.sql
+.read sql/03_vaca_muerta.sql
+.read sql/04_auditoria.sql
+.read sql/05_pico_declino.sql
+.read sql/06_validacion_python.sql
+.read sql/07_declino_calendario.sql
+```
+
+### 2. Análisis en Python
+
 cd scripts
 python fase3_paso1_explorar.py
 python fase3_paso2_formacion.py
@@ -183,6 +237,7 @@ python fase8_paso1_ajustar_arps_un_pozo.py
 python fase8_paso2_ajustar_arps_acotado.py
 python fase8_paso3_comparar_proyecciones.py
 python fase9_paso1_backtesting_arps.py
+
 ```
 
 Requiere `pandas`, `matplotlib` y `scipy`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `fase3_paso1_explorar.py`.
@@ -192,3 +247,4 @@ Requiere `pandas`, `matplotlib` y `scipy`. El dataset crudo (`produccion_no_conv
 ## Licencia
 
 Este repositorio está bajo licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+```
