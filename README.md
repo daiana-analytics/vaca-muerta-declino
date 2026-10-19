@@ -243,7 +243,7 @@ python fase9_paso1_backtesting_arps.py
 python fase11_paso1_leer_desde_duckdb.py
 ```
 
-Requiere `pandas`, `matplotlib` , `scipy` y `duckdb`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `01_carga.sql` o `fase3_paso1_explorar.py`.
+Requiere `pandas`, `matplotlib`, `scipy` y `duckdb`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `01_carga.sql` o `fase3_paso1_explorar.py`.
 
 ---
 
