@@ -196,14 +196,13 @@ El error absoluto (MAE/RMSE) es moderado en relación a los niveles de producci�
 
 ## Cómo ejecutar
 
-````bash
 ### 1. Capa SQL
 
 Requiere [DuckDB](https://duckdb.org/) (en Windows: `winget install DuckDB.cli`). Desde la raíz del repositorio:
 
 ```bash
 duckdb vaca_muerta.duckdb
-````
+```
 
 Y dentro de DuckDB:
 
@@ -219,6 +218,7 @@ Y dentro de DuckDB:
 
 ### 2. Análisis en Python
 
+```bash
 cd scripts
 python fase3_paso1_explorar.py
 python fase3_paso2_formacion.py
@@ -237,14 +237,12 @@ python fase8_paso1_ajustar_arps_un_pozo.py
 python fase8_paso2_ajustar_arps_acotado.py
 python fase8_paso3_comparar_proyecciones.py
 python fase9_paso1_backtesting_arps.py
-
 ```
 
-Requiere `pandas`, `matplotlib` y `scipy`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `fase3_paso1_explorar.py`.
+Requiere `pandas`, `matplotlib` y `scipy`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `01_carga.sql` o `fase3_paso1_explorar.py`.
 
 ---
 
 ## Licencia
 
 Este repositorio está bajo licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
-```
