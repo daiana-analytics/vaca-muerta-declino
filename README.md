@@ -82,7 +82,8 @@ vaca-muerta-declino/
     ├── fase8_paso1_ajustar_arps_un_pozo.py
     ├── fase8_paso2_ajustar_arps_acotado.py
     ├── fase8_paso3_comparar_proyecciones.py
-    └── fase9_paso1_backtesting_arps.py
+    ├── fase9_paso1_backtesting_arps.py
+    └── fase11_paso1_leer_desde_duckdb.py
 ```
 
 ---
@@ -134,6 +135,8 @@ La extracción, limpieza y auditoría de calidad también están resueltas en SQ
 - 43.434 registros (≈20%) corresponden a meses con el pozo parado (`tef = 0`); 172 de ellos informan producción igual, una inconsistencia de carga.
 
 **Validación:** la versión SQL reproduce exactamente el resultado de Python (1.974 pozos, caída promedio de 69,8%). Como Python mide "12 meses después del pico" contando filas, se recalculó por meses calendario: el resultado se mantiene en 69,8% (1.970 pozos), por lo que la métrica es robusta a los huecos de la serie.
+
+**Conexión con Python:** `scripts/fase11_paso1_leer_desde_duckdb.py` lee la vista `vm_produccion` directamente desde DuckDB y la carga en un DataFrame de pandas, en lugar de leer el CSV filtrado.
 
 ---
 
@@ -237,9 +240,10 @@ python fase8_paso1_ajustar_arps_un_pozo.py
 python fase8_paso2_ajustar_arps_acotado.py
 python fase8_paso3_comparar_proyecciones.py
 python fase9_paso1_backtesting_arps.py
+python fase11_paso1_leer_desde_duckdb.py
 ```
 
-Requiere `pandas`, `matplotlib` y `scipy`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `01_carga.sql` o `fase3_paso1_explorar.py`.
+Requiere `pandas`, `matplotlib` , `scipy` y `duckdb`. El dataset crudo (`produccion_no_convencional.csv`) se descarga de [datos.gob.ar](https://datos.gob.ar/dataset/energia-produccion-petroleo-gas-por-pozo-capitulo-iv) y se coloca en `data/` antes de correr `01_carga.sql` o `fase3_paso1_explorar.py`.
 
 ---
 
