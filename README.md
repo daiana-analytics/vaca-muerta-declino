@@ -12,16 +12,18 @@ Entender qué tan rápido pierde producción un pozo no convencional de Vaca Mue
 
 ## Preguntas de negocio
 
-1. **¿Qué tan rápido cae un pozo después de su pico?** Se mide en un pozo de caso (155785) y la caída a los 12 meses.
-2. **¿Es así en todos los pozos o fue un caso aislado?** Se repite el cálculo en los 1.974 pozos modernos (iniciados desde 2016) con historia suficiente.
-3. **¿Todas las caídas son reales?** Se separan los pozos parados de los agotados, para no exagerar el declino.
-4. **¿Cuánto va a producir un pozo en el futuro?** Se ajusta el modelo de Arps, estándar de la industria, con y sin restricciones.
-5. **¿Qué tan confiable es esa proyección?** Se valida el modelo con backtesting: se le esconde el último tramo de la historia y se mide cuánto se equivoca.
+1. **¿Los datos son confiables?** Antes de medir, se audita la calidad del dato en SQL: meses repetidos, meses faltantes y meses con el pozo apagado.
+2. **¿Qué tan rápido cae un pozo después de su pico?** Se mide en un pozo de caso (155785) y la caída a los 12 meses.
+3. **¿Es así en todos los pozos o fue un caso aislado?** Se repite el cálculo en los 1.974 pozos modernos (iniciados desde 2016) con historia suficiente.
+4. **¿Todas las caídas son reales?** Se separan los pozos parados de los agotados, para no exagerar el declino.
+5. **¿Cuánto va a producir un pozo en el futuro?** Se ajusta el modelo de Arps, estándar de la industria, con y sin restricciones.
+6. **¿Qué tan confiable es esa proyección?** Se valida el modelo con backtesting: se le esconde el último tramo de la historia y se mide cuánto se equivoca.
 
 ## Resultados clave
 
 | Indicador                                                | Resultado                         |
 | -------------------------------------------------------- | --------------------------------- |
+| Pozos con meses faltantes (auditoría SQL)                | **409** de 3.417 pozos            |
 | Caída promedio a los 12 meses del pico                   | **69,8%** (1.974 pozos modernos)  |
 | Caída promedio total, hasta el último dato               | **85,5%**                         |
 | Pozos parados al cierre del período                      | **12,1%** de 2.348 pozos modernos |
