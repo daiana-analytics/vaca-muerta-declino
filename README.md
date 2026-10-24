@@ -64,7 +64,10 @@ vaca-muerta-declino/
 │   ├── 04_auditoria.sql
 │   ├── 05_pico_declino.sql
 │   ├── 06_validacion_python.sql
-│   └── 07_declino_calendario.sql
+│   ├── 07_declino_calendario.sql
+│   ├── 08_pozos_parados.sql
+│   └── sqlserver/
+│       └── 05_pico_declino_sqlserver.sql
 └── scripts/
     ├── fase3_paso1_explorar.py
     ├── fase3_paso2_formacion.py
@@ -127,6 +130,8 @@ La extracción, limpieza y auditoría de calidad también están resueltas en SQ
 | `05_pico_declino.sql`       | Pico de cada pozo y producción 12 meses después, con funciones de ventana (`ROW_NUMBER`) y CTE.            |
 | `06_validacion_python.sql`  | Replica la lógica de Python (12 filas después del pico, con `LEAD`) para validar la migración.             |
 | `07_declino_calendario.sql` | Recalcula el declino por meses calendario, robusto a huecos en la serie.                                   |
+| `08_pozos_parados.sql`      | Replica el % de pozos modernos parados (`tef = 0`) en su último registro.                                  |
+| `sqlserver/05_pico_declino_sqlserver.sql` | La consulta del pico en T-SQL, con las diferencias de sintaxis respecto de DuckDB comentadas. |
 
 **Hallazgos de la auditoría:**
 
@@ -217,6 +222,7 @@ Y dentro de DuckDB:
 .read sql/05_pico_declino.sql
 .read sql/06_validacion_python.sql
 .read sql/07_declino_calendario.sql
+.read sql/08_pozos_parados.sql
 ```
 
 ### 2. Análisis en Python
